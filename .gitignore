@@ -26,8 +26,10 @@ project/boot/
 *.log
 .idea
 logs
+derby.log
 public
 app/views
+secrets.conf
 
 # sbt specific
 .lib/

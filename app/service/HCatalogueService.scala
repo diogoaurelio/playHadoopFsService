@@ -1,4 +1,4 @@
-package models
+package service
 
 import java.io.IOException
 import java.util
@@ -11,7 +11,7 @@ import play.api.Logger
 /**
   * Provides interface between API & HCatalog store
   */
-class HCatalogueService(dbName: String, host: String) {
+class HCatalogueService(dbName: String, host: String = "localhost") {
 
   def streamFromTable(tableName: String) = {
     val builder: ReadEntity.Builder = new ReadEntity.Builder()
@@ -23,9 +23,9 @@ class HCatalogueService(dbName: String, host: String) {
 
     val reader: HCatReader = DataTransferFactory.getHCatReader(entity, config)
     val cntxt: ReaderContext = reader.prepareRead()
-    Logger.info(s"Num of splits in context: ${cntxt.numSplits()}")
+    Logger.info(s"Num of splits in context: ${cntxt.numSplits}")
 
-    for(split <- cntxt.numSplits()) {
+    for(split <- 0 to cntxt.numSplits) {
       val splitReader:HCatReader = DataTransferFactory.getHCatReader(cntxt, split)
       val tablePages: util.Iterator[HCatRecord] = splitReader.read()
       Logger.info(s"ITR1: ${tablePages}")

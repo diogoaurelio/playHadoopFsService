@@ -57,8 +57,8 @@ class Application @Inject()(wSClient: WSClient)(implicit ec: ExecutionContext) e
 
   private def queryToSource(keyword: String) = {
     val request = wSClient
-        .url(routes.Application.timeline(keyword))
-      //.url(s"http://localhost:9000/timeline")
+        //.url(routes.Application.timeline(keyword))
+      .url(s"http://localhost:9000/timeline")
       .withQueryString("keyword" -> keyword)
 
     streamResponse(request)
