@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-docker build -t playhadoop .
+
+CONTAINER_NAME=playhadoop
+
+docker rm -f -v $CONTAINER_NAME
+
+docker build -t $CONTAINER_NAME .

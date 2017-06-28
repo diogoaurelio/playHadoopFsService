@@ -6,6 +6,11 @@ import java.util
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hive.hcatalog.data.HCatRecord
 import org.apache.hive.hcatalog.data.transfer.{DataTransferFactory, HCatReader, ReadEntity, ReaderContext}
+import org.apache.hive.hcatalog.common.HCatUtil
+import org.apache.hive.hcatalog.data.schema.HCatSchema
+import org.apache.hadoop.hive.ql.metadata.Table
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient
 import play.api.Logger
 
 /**
@@ -13,11 +18,20 @@ import play.api.Logger
   */
 class HCatalogueService(dbName: String, host: String = "localhost") {
 
+  lazy val conf: Configuration = null
+  lazy val hiveConf = HCatUtil.getHiveConf(conf)
+
+  def getTableSchema(dbName: String, tableName: String): HCatSchema = {
+    val client: HiveMetaStoreClient = HCatUtil.getHiveClient(hiveConf)
+    val table: Table = HCatUtil.getTable(client, dbName, tableName)
+    HCatUtil.getTableSchemaWithPtnCols(table)
+  }
+
   def streamFromTable(tableName: String) = {
     val builder: ReadEntity.Builder = new ReadEntity.Builder()
     val entity: ReadEntity = builder
       .withDatabase(dbName)
-      .withTable(tableName).build();
+      .withTable(tableName).build()
 
     val config: util.HashMap[String, String] = new util.HashMap()
 
