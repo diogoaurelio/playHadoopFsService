@@ -1,12 +1,7 @@
-CREATE TABLE IF NOT EXISTS `testing.test_map`(
-  `id` string, 
-  `type` map<string,bigint>, 
+CREATE TABLE IF NOT EXISTS `testing.test_simple`(
+  `id` string,
   `created_at` string, 
   `created_by` string)
-PARTITIONED BY ( 
-  `year` string, 
-  `month` string, 
-  `month_id` string)
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY '\t' 
 COLLECTION ITEMS TERMINATED BY ',' 
@@ -19,5 +14,5 @@ TBLPROPERTIES (
   'schema.checksum'='268A5DEE8D2AC2A757FBB8C5F1265B5C', 
   'transient_lastDdlTime'='1454943496');
 
-LOAD DATA LOCAL INPATH '/usr/local/mount_data/test_map_data.txt' OVERWRITE INTO TABLE testing.test_map PARTITION (year='2015', month='08', month_id='201508');
-SELECT COUNT(*) FROM testing.test_map;
+LOAD DATA LOCAL INPATH '/usr/local/mount_data/test_simple_data.txt' OVERWRITE INTO TABLE testing.test_simple;
+SELECT COUNT(*) FROM testing.test_simple;

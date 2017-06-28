@@ -10,15 +10,23 @@ import org.apache.hive.hcatalog.common.HCatUtil
 import org.apache.hive.hcatalog.data.schema.HCatSchema
 import org.apache.hadoop.hive.ql.metadata.Table
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient
+import org.apache.hadoop.mapreduce.Job
+import org.apache.hive.hcatalog.mapreduce.{HCatInputFormat, InputJobInfo}
 import play.api.Logger
 
 /**
   * Provides interface between API & HCatalog store
   */
-class HCatalogueService(dbName: String, host: String = "localhost") {
+class HCatalogueService(dbName: String, host: String, port: Int) {
 
-  lazy val conf: Configuration = null
+  private lazy val hiveSiteConfPath = this.getClass.getProtectionDomain.getCodeSource().getLocation().getPath() + "../../docker/hive-site.xml"
+  private lazy val conf = {
+    val conf = new Configuration()
+    conf.addResource(new Path(hiveSiteConfPath))
+    conf
+  }
   lazy val hiveConf = HCatUtil.getHiveConf(conf)
 
   def getTableSchema(dbName: String, tableName: String): HCatSchema = {
@@ -27,13 +35,55 @@ class HCatalogueService(dbName: String, host: String = "localhost") {
     HCatUtil.getTableSchemaWithPtnCols(table)
   }
 
+  /*
+  def initJob(dbName: String, tableName: String): Unit = {
+    val job: Job = new Job(conf, "HCatalogueService")
+    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
+      tableName, null))
+    // initialize HCatOutputFormat
+
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setJarByClass(GroupByAge.class);
+    job.setMapperClass(Map.class);
+    job.setReducerClass(Reduce.class);
+    job.setMapOutputKeyClass(IntWritable.class);
+    job.setMapOutputValueClass(IntWritable.class);
+    job.setOutputKeyClass(WritableComparable.class);
+    job.setOutputValueClass(DefaultHCatRecord.class);
+    HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
+      outputTableName, null));
+    HCatSchema s = HCatOutputFormat.getTableSchema(job);
+    System.err.println("INFO: output schema explicitly set for writing:"
+      + s);
+    HCatOutputFormat.setSchema(job, s);
+    job.setOutputFormatClass(HCatOutputFormat.class);
+  }
+  */
+
   def streamFromTable(tableName: String) = {
+
+    //val schema = getTableSchema(dbName, tableName)
+
     val builder: ReadEntity.Builder = new ReadEntity.Builder()
     val entity: ReadEntity = builder
       .withDatabase(dbName)
-      .withTable(tableName).build()
+      .withTable(tableName)
+      .build()
 
     val config: util.HashMap[String, String] = new util.HashMap()
+    config.put("hive.metastore.uris", s"thrift://${host}:9083") // 172.17.0.1
+    config.put("javax.jdo.option.ConnectionUserName", "APP")
+    config.put("javax.jdo.option.ConnectionPassword", "mine")
+    config.put("javax.jdo.option.ConnectionURL", "jdbc:mysql://localhost:3306/metastore?create=true")
+    config.put("javax.jdo.option.ConnectionDriverName", "com.mysql.jdbc.Driver")
+    config.put("datanucleus.fixedDatastore", "true")
+    config.put("datanucleus.autoCreateSchema", "false")
+
+/*    val itr = hiveConf.iterator()
+    while (itr.hasNext) {
+      val next: util.Map.Entry[String, String] = itr.next()
+      config.put(next.getKey, next.getValue)
+    }*/
 
     val reader: HCatReader = DataTransferFactory.getHCatReader(entity, config)
     val cntxt: ReaderContext = reader.prepareRead()
@@ -92,7 +142,7 @@ object HCatalogueService {
     apply(dbName, host)
   }
 
-  def apply(dbName: String, host: String): HCatalogueService =
-    new HCatalogueService(dbName, host)
+  def apply(dbName: String, host: String = "localhost", port: Int = 9083): HCatalogueService =
+    new HCatalogueService(dbName, host, port)
 
 }

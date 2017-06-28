@@ -11,8 +11,7 @@ class HCatalogueServiceSpec extends FlatSpecLike {
 
   trait HCatalogueServiceTest {
     lazy val dbName = "testing"
-    lazy val host = "localhost"
-    lazy val service = HCatalogueService(dbName: String, host: String)
+    lazy val service = HCatalogueService(dbName)
   }
 
 
@@ -26,7 +25,7 @@ class HCatalogueServiceSpec extends FlatSpecLike {
     lazy val hiveScratchDir = "/tmp/hive_scratch_dir"
     lazy val hiveWarehouseDir = "/tmp/warehouse_dir"
 
-    service.streamFromTable(tableName = "test")
+    service.streamFromTable(tableName = "test_map")
 
     /*
     val zookeeperLocalCluster: ZookeeperLocalCluster = new ZookeeperLocalCluster.Builder()

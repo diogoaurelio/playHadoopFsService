@@ -11,13 +11,14 @@ ENV HADOOP_VERSION 2.7.2
 ENV HIVE_PORT 10000
 ENV HIVE_METASTORE_PORT 9083
 ENV DERBY_VERSION 10.13.1.1
+ENV HIVE_SERVER_PORT 10002
 
 
 # install dev tools
 RUN echo "mysql-server-5.5 mysql-server/root_password password password" | debconf-set-selections
 RUN echo "mysql-server-5.5 mysql-server/root_password_again password password" | debconf-set-selections
 RUN apt-get -qq update
-RUN apt-get -qq -y install telnet curl tar sudo openssh-server openssh-client rsync git python-pip mysql-server lzop jq bison gnuplot vim
+RUN apt-get -qq -y install net-tools telnet curl tar sudo openssh-server openssh-client rsync git python-pip mysql-server lzop jq bison gnuplot vim
 
 # passwordless ssh
 RUN rm -f /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_rsa_key /root/.ssh/id_rsa
@@ -98,13 +99,15 @@ RUN cd $HIVE_HOME/conf/
 
 COPY startup.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/startup.sh
+RUN mkdir -p /usr/local/mount_data
 
 # default hive.port
 EXPOSE $HIVE_PORT
 # default hive.metastore.port
 EXPOSE $HIVE_METASTORE_PORT
+EXPOSE $HIVE_SERVER_PORT
 
-CMD /usr/local/bin/startup.sh
+#CMD /usr/local/bin/startup.sh
 
 
 
