@@ -5,5 +5,3 @@ PARAM=$1
 CONTAINER_NAME=${PARAM:=playhadoop}
 
 docker rm -f -v $CONTAINER_NAME
-
-docker build -t $CONTAINER_NAME .

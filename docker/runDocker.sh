@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINER_NAME=playhadoop
+PARAM=$1
+# set default val ('playhadoop') if param not provided
+CONTAINER_NAME=${PARAM:=playhadoop}
 HIVE_PORT=10000
 HIVE_METASTORE_PORT=9083
 HIVE_SERVER_PORT=10002
@@ -8,11 +10,11 @@ DOCKER_INNER_MOUNT=/usr/local/mount_data
 RESOURCES_DIR="$(dirname "${PWD}")/test/resources"
 echo $RESOURCES_DIR
 
-docker rm -f -v $CONTAINER_NAME
+bash $PWD/stopDocker.sh $CONTAINER_NAME
 
 
 
-docker run -d -t \
+docker run -t -d \
  --name playhadoop \
  -p $HIVE_METASTORE_PORT:$HIVE_METASTORE_PORT \
  -p $HIVE_PORT:$HIVE_PORT \

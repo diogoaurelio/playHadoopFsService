@@ -107,7 +107,7 @@ EXPOSE $HIVE_PORT
 EXPOSE $HIVE_METASTORE_PORT
 EXPOSE $HIVE_SERVER_PORT
 
-#CMD /usr/local/bin/startup.sh
+CMD /usr/local/bin/startup.sh
 
 
 

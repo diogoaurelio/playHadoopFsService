@@ -116,9 +116,26 @@
 
     <property>
         <name>hive.users.in.admin.role</name>
-        <value>root</value>
+        <value>root</value> <!-- root -->
         <description>Comma separated list of users who are in admin role for bootstrapping.
             More users can be added in ADMIN role later.</description>
     </property>
+    <property>
+        <name>hive.exec.scratchdir</name>
+        <value>/tmp/hive</value>
+        <description>HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/&lt;username&gt; is created, with ${hive.scratch.dir.permission}.</description>
+    </property>
+    <property>
+        <name>hive.scratch.dir.permission</name>
+        <value>777</value>
+        <description>The permission for the user specific scratch directories that get created.</description>
+    </property>
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+        <description>location of default database for the warehouse</description>
+    </property>
+
+
 
 </configuration>

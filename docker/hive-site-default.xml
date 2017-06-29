@@ -501,7 +501,7 @@
         <value>jdbc:derby://localhost:9083/metastore_db?create=true</value>
         <description>
             JDBC connect string for a JDBC metastore.
-            jdbc:derby://localhost:9083;databaseName=metastore_db;create=true
+            jdbc:derby://localhost:10000;databaseName=metastore_db;create=true
             To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
             For example, jdbc:postgresql://myhost/db?ssl=true for postgres database.
         </description>

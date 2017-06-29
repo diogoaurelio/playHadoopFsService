@@ -19,7 +19,11 @@ import play.api.Logger
 /**
   * Provides interface between API & HCatalog store
   */
-class HCatalogueService(dbName: String, host: String, port: Int) {
+class HCatalogueService(dbName: String,
+                        host: String,
+                        port: Int,
+                        user: String = "APP",
+                        pass: String = "mine") {
 
   private lazy val hiveSiteConfPath = this.getClass.getProtectionDomain.getCodeSource().getLocation().getPath() + "../../docker/hive-site.xml"
   private lazy val conf = {
@@ -71,15 +75,15 @@ class HCatalogueService(dbName: String, host: String, port: Int) {
       .build()
 
     val config: util.HashMap[String, String] = new util.HashMap()
-    config.put("hive.metastore.uris", s"thrift://${host}:9083") // 172.17.0.1
-    config.put("javax.jdo.option.ConnectionUserName", "APP")
-    config.put("javax.jdo.option.ConnectionPassword", "mine")
-    config.put("javax.jdo.option.ConnectionURL", "jdbc:mysql://localhost:3306/metastore?create=true")
-    config.put("javax.jdo.option.ConnectionDriverName", "com.mysql.jdbc.Driver")
-    config.put("datanucleus.fixedDatastore", "true")
-    config.put("datanucleus.autoCreateSchema", "false")
+    config.put("hive.metastore.uris", s"thrift://${host}:${port}") // 172.17.0.1
+    config.put("javax.jdo.option.ConnectionUserName", user)
+    config.put("javax.jdo.option.ConnectionPassword", pass)
+    //    config.put("javax.jdo.option.ConnectionURL", "jdbc:mysql://localhost:3306/metastore?create=true")
+    //    config.put("javax.jdo.option.ConnectionDriverName", "com.mysql.jdbc.Driver")
+    //    config.put("datanucleus.fixedDatastore", "true")
+    //    config.put("datanucleus.autoCreateSchema", "false")
 
-/*    val itr = hiveConf.iterator()
+    /*    val itr = hiveConf.iterator()
     while (itr.hasNext) {
       val next: util.Map.Entry[String, String] = itr.next()
       config.put(next.getKey, next.getValue)
@@ -89,35 +93,42 @@ class HCatalogueService(dbName: String, host: String, port: Int) {
     val cntxt: ReaderContext = reader.prepareRead()
     Logger.info(s"Num of splits in context: ${cntxt.numSplits}")
 
-    for(split <- 0 to cntxt.numSplits) {
-      val splitReader:HCatReader = DataTransferFactory.getHCatReader(cntxt, split)
-      val tablePages: util.Iterator[HCatRecord] = splitReader.read()
-      Logger.info(s"ITR1: ${tablePages}")
-      // TODO: get col names for schema building + build Map
+    if (cntxt.numSplits >= 0) {
+      for (split <- 0 to cntxt.numSplits) {
+        val splitReader: HCatReader = DataTransferFactory.getHCatReader(cntxt, split)
+        val tablePages: util.Iterator[HCatRecord] = splitReader.read()
+        Logger.info(s"ITR1: ${tablePages}")
+        // TODO: get col names for schema building + build Map
 
-      while (tablePages.hasNext()) {
-        val records: HCatRecord = tablePages.next()
-        Logger.info(s"Records: ${records}")
-        try {
-          val recordsIterator: util.Iterator[Object] = records.getAll.iterator()
+        while (tablePages.hasNext()) {
+          val records: HCatRecord = tablePages.next()
+          Logger.info(s"Records: ${records}")
+          try {
+            val recordsIterator: util.Iterator[Object] = records.getAll.iterator()
 
-          val page = new StringBuilder
-          // iterate over full row
-          while (recordsIterator.hasNext) {
-            // TODO: implement sink
-            val colRow = recordsIterator.next.toString
-            page.append(colRow)
-            if (recordsIterator.hasNext)
-              page.append("\t")
-            else
-              page.append("\n")
+            val page = new StringBuilder
+            // iterate over full row
+            while (recordsIterator.hasNext) {
+              // TODO: implement sink
+              val colRow = recordsIterator.next.toString
+              page.append(colRow)
+              if (recordsIterator.hasNext)
+                page.append("\t")
+              else
+                page.append("\n")
+            }
+            println("Yielding intermediate results...")
+            println(page.toString)
+            // return page.toString
+
+          } catch {
+            case io: IOException => Logger.error(s"Failed to read from HCatalogue: ${io.getMessage}"); throw io
           }
-          // return page.toString
-
-        } catch {
-          case io: IOException => Logger.error(s"Failed to read from HCatalogue: ${io.getMessage}"); throw io
         }
       }
+    } else {
+      Logger.info(s"Table ${tableName} is empty.")
+      None
     }
   }
 }
